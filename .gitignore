@@ -1,0 +1,13 @@
+# Built executables
+*.exe
+
+# Go build cache
+/vendor/
+
+# IDE
+.vscode/
+.idea/
+
+# Windows OS artifacts
+Thumbs.db
+desktop.ini
