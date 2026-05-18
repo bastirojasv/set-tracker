@@ -38,6 +38,9 @@ func (a *App) buildVictoryScreen() fyne.CanvasObject {
 	// Radial glow (large tinted circle)
 	glow := canvas.NewCircle(WithAlpha(winCol, 25))
 	glow.Resize(fyne.NewSize(600, 600))
+	glowAnim := glowLoop(glow, winCol, 15, 35)
+	a.trackAnim(glowAnim)
+	glowAnim.Start()
 
 	// Labels
 	finalLbl := canvas.NewText("SET FINALIZADO", ColorMuted)
@@ -48,9 +51,11 @@ func (a *App) buildVictoryScreen() fyne.CanvasObject {
 	headline.TextSize = 88
 	headline.TextStyle = fyne.TextStyle{Bold: true}
 	headline.Alignment = fyne.TextAlignCenter
+	headlineAnim := fadeText(headline, 450*ms, easeOutF)
+	after(200*ms, headlineAnim.Start)
 
 	// Score row
-	winScoreTxt := canvas.NewText(fmt.Sprintf("%d", userScore), userCol)
+	winScoreTxt := canvas.NewText("0", userCol)
 	winScoreTxt.TextSize = 88
 	winScoreTxt.TextStyle = fyne.TextStyle{Bold: true}
 	if !userWon {
@@ -60,12 +65,22 @@ func (a *App) buildVictoryScreen() fyne.CanvasObject {
 	dashTxt := canvas.NewText("—", ColorDim)
 	dashTxt.TextSize = 60
 
-	loseScoreTxt := canvas.NewText(fmt.Sprintf("%d", oppScore), oppCol)
+	loseScoreTxt := canvas.NewText("0", oppCol)
 	loseScoreTxt.TextSize = 88
 	loseScoreTxt.TextStyle = fyne.TextStyle{Bold: true}
 	if userWon {
 		loseScoreTxt.Color = ColorMuted
 	}
+	after(300*ms, func() {
+		countUp(func(n int) {
+			winScoreTxt.Text = fmt.Sprintf("%d", n)
+			winScoreTxt.Refresh()
+		}, userScore, 800*ms).Start()
+		countUp(func(n int) {
+			loseScoreTxt.Text = fmt.Sprintf("%d", n)
+			loseScoreTxt.Refresh()
+		}, oppScore, 800*ms).Start()
+	})
 
 	scoreRow := container.NewCenter(container.NewHBox(winScoreTxt, dashTxt, loseScoreTxt))
 
@@ -88,8 +103,12 @@ func (a *App) buildVictoryScreen() fyne.CanvasObject {
 
 	// Trophy
 	trophyLbl := canvas.NewText("🏆", ColorText)
-	trophyLbl.TextSize = 64
+	trophyLbl.TextSize = 0
 	trophyLbl.Alignment = fyne.TextAlignCenter
+	fyne.NewAnimation(500*ms, func(t float32) {
+		trophyLbl.TextSize = 64 * overshootF(t)
+		trophyLbl.Refresh()
+	}).Start()
 
 	// Continue
 	continueBtn := NewActionButton("Continuar →", winCol, func() {
@@ -114,6 +133,7 @@ func (a *App) buildVictoryScreen() fyne.CanvasObject {
 	)
 
 	tintedBg := canvas.NewRectangle(WithAlpha(winCol, 10))
+	fadeRect(tintedBg, 10, 400*ms).Start()
 
 	return container.NewStack(
 		overlayBg,

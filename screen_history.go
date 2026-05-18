@@ -46,10 +46,10 @@ func (a *App) buildHistoryScreen() fyne.CanvasObject {
 	titleBlock := container.NewVBox(titleLabel, histTitle)
 
 	statsRow := container.NewHBox(
-		buildStatWidget("Total", fmt.Sprintf("%d", total), ColorText),
-		buildStatWidget("Victorias", fmt.Sprintf("%d", wins), ColorUser),
-		buildStatWidget("Derrotas", fmt.Sprintf("%d", losses), ColorOpponent),
-		buildStatWidget("Winrate", fmt.Sprintf("%d%%", wr), ColorText),
+		buildStatWidget("Total", total, func(n int) string { return fmt.Sprintf("%d", n) }, ColorText),
+		buildStatWidget("Victorias", wins, func(n int) string { return fmt.Sprintf("%d", n) }, ColorUser),
+		buildStatWidget("Derrotas", losses, func(n int) string { return fmt.Sprintf("%d", n) }, ColorOpponent),
+		buildStatWidget("Winrate", wr, func(n int) string { return fmt.Sprintf("%d%%", n) }, ColorText),
 	)
 	headerRow := container.NewBorder(nil, nil, titleBlock, statsRow)
 
@@ -178,14 +178,18 @@ func (a *App) buildHistoryScreen() fyne.CanvasObject {
 	)
 }
 
-func buildStatWidget(label, value string, col color.NRGBA) fyne.CanvasObject {
+func buildStatWidget(label string, target int, format func(int) string, col color.NRGBA) fyne.CanvasObject {
 	lbl := canvas.NewText(strings.ToUpper(label), ColorMuted)
 	lbl.TextSize = 10
 	lbl.Alignment = fyne.TextAlignTrailing
-	val := canvas.NewText(value, col)
+	val := canvas.NewText("0", col)
 	val.TextSize = 28
 	val.TextStyle = fyne.TextStyle{Bold: true}
 	val.Alignment = fyne.TextAlignTrailing
+	countUp(func(n int) {
+		val.Text = format(n)
+		val.Refresh()
+	}, target, 600*ms).Start()
 	return container.NewVBox(lbl, val)
 }
 

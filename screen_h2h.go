@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"strings"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -182,7 +183,11 @@ func buildWinrateBar(userCol color.NRGBA, wr int) fyne.CanvasObject {
 	pctLbl.Alignment = fyne.TextAlignTrailing
 	labelRow := container.NewBorder(nil, nil, label, pctLbl)
 
-	userBar := canvas.NewRectangle(userCol)
+	userBar := canvas.NewRectangle(WithAlpha(userCol, 0))
+	fyne.NewAnimation(700*ms, func(t float32) {
+		userBar.FillColor = WithAlpha(userCol, uint8(easeInOutF(t)*255))
+		userBar.Refresh()
+	}).Start()
 	oppBar := canvas.NewRectangle(ColorOpponent)
 	barBg := canvas.NewRectangle(ColorSurface2)
 	bar := container.New(&splitBarLayout{fraction: float32(wr) / 100.0}, barBg, userBar, oppBar)
@@ -214,9 +219,9 @@ func buildRecentForm(records []SetRecord) fyne.CanvasObject {
 			col = ColorUser
 			letter = "W"
 		}
-		dot := canvas.NewRectangle(col)
+		dot := canvas.NewRectangle(WithAlpha(col, 0))
 		dot.CornerRadius = 2
-		lbl := canvas.NewText(letter, ColorBG)
+		lbl := canvas.NewText(letter, WithAlpha(ColorBG, 0))
 		lbl.TextSize = 11
 		lbl.TextStyle = fyne.TextStyle{Bold: true}
 		lbl.Alignment = fyne.TextAlignCenter
@@ -224,6 +229,17 @@ func buildRecentForm(records []SetRecord) fyne.CanvasObject {
 			container.NewStack(dot, container.NewCenter(lbl)),
 		)
 		pips.Add(pip)
+		capturedDot, capturedLbl, capturedCol := dot, lbl, col
+		pipDelay := time.Duration(i) * 60 * ms
+		pipAnim := fyne.NewAnimation(200*ms, func(t float32) {
+			a := uint8(easeOutF(t) * 255)
+			capturedDot.FillColor = WithAlpha(capturedCol, a)
+			capturedLbl.Color = WithAlpha(ColorBG, a)
+			capturedDot.Refresh()
+			capturedLbl.Refresh()
+		})
+		pipAnim.Curve = fyne.AnimationLinear
+		after(pipDelay, pipAnim.Start)
 	}
 
 	bg := canvas.NewRectangle(ColorSurface)

@@ -175,16 +175,30 @@ func buildProfileContent(a *App, onClose func()) fyne.CanvasObject {
 
 		if err := a.db.SaveProfile(profile); err != nil {
 			feedbackLbl.Text = "Error al guardar: " + err.Error()
-			feedbackLbl.Color = ColorOpponent
+			feedbackLbl.Color = transparent(ColorOpponent)
 			feedbackLbl.Refresh()
+			fyne.NewAnimation(300*ms, func(t float32) {
+				feedbackLbl.Color = lerpColor(transparent(ColorOpponent), ColorOpponent, easeOutF(t))
+				feedbackLbl.Refresh()
+			}).Start()
 			return
 		}
 		a.profile = profile
 		a.refreshProfileWidget()
 
 		feedbackLbl.Text = "✓  Perfil guardado correctamente"
-		feedbackLbl.Color = ColorUser
+		feedbackLbl.Color = transparent(ColorUser)
 		feedbackLbl.Refresh()
+		fyne.NewAnimation(300*ms, func(t float32) {
+			feedbackLbl.Color = lerpColor(transparent(ColorUser), ColorUser, easeOutF(t))
+			feedbackLbl.Refresh()
+		}).Start()
+		after(2300*ms, func() {
+			fyne.NewAnimation(400*ms, func(t float32) {
+				feedbackLbl.Color = lerpColor(ColorUser, transparent(ColorUser), easeInF(t))
+				feedbackLbl.Refresh()
+			}).Start()
+		})
 	})
 	saveBtn.Importance = widget.HighImportance
 

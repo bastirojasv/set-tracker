@@ -118,4 +118,7 @@ func (a *App) showOnboarding() {
 	)
 
 	a.win.SetContent(container.NewStack(bg, content))
+	fadeText(title, 300*ms, easeOutF).Start()
+	after(150*ms, fadeText(appName, 350*ms, easeOutF).Start)
+	after(300*ms, fadeText(subtitle, 300*ms, easeOutF).Start)
 }

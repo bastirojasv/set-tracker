@@ -24,6 +24,9 @@ type App struct {
 
 	content *fyne.Container // border container holding header + current screen
 	body    *fyne.Container // max container swapped per screen
+
+	anims      []*fyne.Animation
+	lastWinner string
 }
 
 func newApp(a fyne.App, w fyne.Window, db *DB) *App {
@@ -83,8 +86,20 @@ func (a *App) buildMain() {
 }
 
 func (a *App) setBody(obj fyne.CanvasObject) {
+	a.stopAnims()
 	a.body.Objects = []fyne.CanvasObject{obj}
 	a.body.Refresh()
+}
+
+func (a *App) trackAnim(anim *fyne.Animation) {
+	a.anims = append(a.anims, anim)
+}
+
+func (a *App) stopAnims() {
+	for _, anim := range a.anims {
+		anim.Stop()
+	}
+	a.anims = nil
 }
 
 // buildHeader creates the top navigation bar

@@ -93,6 +93,16 @@ func (a *App) buildActiveSetScreen() fyne.CanvasObject {
 		)),
 	)
 
+	switch a.lastWinner {
+	case "user":
+		popText(userScoreTxt, 180, 1.3, 220*ms).Start()
+		flashRect(userBg, 12, 60, 300*ms).Start()
+	case "opponent":
+		popText(oppScoreTxt, 180, 1.3, 220*ms).Start()
+		flashRect(oppBg, 12, 60, 300*ms).Start()
+	}
+	a.lastWinner = ""
+
 	// VS divider
 	// Set type badge (top center overlay)
 	setTypeTxt := canvas.NewText(fmt.Sprintf("%s %d", s.SetType, s.SetNumber), ColorText)
@@ -263,6 +273,16 @@ func (a *App) buildLibreSetScreen() fyne.CanvasObject {
 		)),
 	)
 
+	switch a.lastWinner {
+	case "user":
+		popText(userScoreTxt, adaptSize(s.UserScore), 1.3, 220*ms).Start()
+		flashRect(userBg, 12, 60, 300*ms).Start()
+	case "opponent":
+		popText(oppScoreTxt, adaptSize(s.OppScore), 1.3, 220*ms).Start()
+		flashRect(oppBg, 12, 60, 300*ms).Start()
+	}
+	a.lastWinner = ""
+
 	// Badge central con tipo
 	badgeText := "Set Libre · sin límite"
 	if s.SetNumber > 0 {
@@ -420,6 +440,7 @@ func (a *App) recordGame(winner string) {
 					a.showError(fmt.Sprintf("Error al actualizar pantalla: %v", r))
 				}
 			}()
+			a.lastWinner = winner
 			a.setBody(a.buildActiveSetScreen())
 		}()
 	}
