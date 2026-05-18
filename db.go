@@ -153,7 +153,7 @@ func (db *DB) StartSet(setType string, setNum int, oppName, oppColor string) (*A
 
 	res, err := db.conn.Exec(
 		"INSERT INTO sets(set_type, set_number, opponent_name, opponent_color, played_at) VALUES(?,?,?,?,?)",
-		setType, setNum, oppName, oppColor, time.Now(),
+		setType, setNum, oppName, oppColor, time.Now().Format("2006-01-02 15:04:05"),
 	)
 	if err != nil {
 		return nil, err
@@ -245,7 +245,7 @@ func (db *DB) LoadHistory() ([]SetRecord, error) {
 		if err != nil {
 			continue
 		}
-		r.PlayedAt, _ = time.Parse("2006-01-02 15:04:05", playedAt)
+		r.PlayedAt = parseDateTime(playedAt)
 		if wonInt != nil {
 			b := *wonInt == 1
 			r.UserWon = &b
@@ -300,7 +300,7 @@ func (db *DB) LoadH2H(opponent string) ([]SetRecord, error) {
 		var playedAt string
 		rows.Scan(&r.ID, &playedAt, &r.SetType, &r.SetNumber,
 			&r.UserScore, &r.OpponentScore, &r.OpponentName, &r.OpponentColor, &wonInt)
-		r.PlayedAt, _ = time.Parse("2006-01-02 15:04:05", playedAt)
+		r.PlayedAt = parseDateTime(playedAt)
 		if wonInt != nil {
 			b := *wonInt == 1
 			r.UserWon = &b
@@ -338,6 +338,22 @@ func (db *DB) DeleteAllHistory() error {
 	}
 	_, err := db.conn.Exec("DELETE FROM sets WHERE status='completed'")
 	return err
+}
+
+// parseDateTime handles the multiple formats that modernc/sqlite may produce
+// when storing time.Time values (RFC3339Nano, RFC3339, plain datetime string).
+func parseDateTime(s string) time.Time {
+	for _, layout := range []string{
+		"2006-01-02 15:04:05",
+		time.RFC3339Nano,
+		time.RFC3339,
+		"2006-01-02T15:04:05",
+	} {
+		if t, err := time.Parse(layout, s); err == nil {
+			return t
+		}
+	}
+	return time.Time{}
 }
 
 func nullStr(s string) interface{} {
