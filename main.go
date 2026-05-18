@@ -8,7 +8,7 @@ import (
 	"fyne.io/fyne/v2/app"
 )
 
-//go:embed bear.png
+//go:embed assets/bear.png
 var bearIconData []byte
 
 func main() {

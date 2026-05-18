@@ -1,5 +1,10 @@
 # Binaries
 *.exe
+
+# Build artifacts
+build_err.txt
+build_exit.txt
+windres_err.txt
 *.exe~
 *.dll
 *.so

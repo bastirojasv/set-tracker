@@ -6,7 +6,7 @@ Set-Location C:\SetTracker
 
 # ── Generar bear.ico + rsrc.syso si no existe o si bear.png cambió ──
 $needIcon = (-not (Test-Path 'rsrc.syso')) -or
-            ((Get-Item 'bear.png').LastWriteTime -gt (Get-Item 'rsrc.syso').LastWriteTime)
+            ((Get-Item 'assets\bear.png').LastWriteTime -gt (Get-Item 'rsrc.syso').LastWriteTime)
 
 if ($needIcon) {
     Write-Output "Generando recurso de icono..."
@@ -14,7 +14,7 @@ if ($needIcon) {
     # 1. Convertir bear.png a ICO multi-tamaño (PNG-in-ICO, Vista+)
     Add-Type -AssemblyName System.Drawing
     $sizes = @(256, 128, 64, 48, 32, 16)
-    $src   = New-Object System.Drawing.Bitmap("$PWD\bear.png")
+    $src   = New-Object System.Drawing.Bitmap("$PWD\assets\bear.png")
     $pngImages = @{}
 
     foreach ($s in $sizes) {
@@ -52,16 +52,17 @@ if ($needIcon) {
     }
     foreach ($s in $sizes) { $bw.Write($pngImages[$s]) }
     $bw.Flush()
-    [System.IO.File]::WriteAllBytes("$PWD\bear.ico", $out.ToArray())
+    [System.IO.File]::WriteAllBytes("$PWD\assets\bear.ico", $out.ToArray())
     $bw.Dispose(); $out.Dispose()
     Write-Output "  bear.ico creado ($($sizes.Count) tamaños)"
 
     # 2. Crear script de recurso Windows
-    Set-Content -Path "$PWD\icon.rc" -Value 'IDI_ICON1 ICON "bear.ico"'
+    Set-Content -Path "$PWD\assets\icon.rc" -Value 'IDI_ICON1 ICON "bear.ico"'
 
     # 3. Compilar con windres (MinGW)
+    # rsrc.syso debe quedar en la raíz para que el linker de Go lo encuentre
     $wr = Start-Process -FilePath 'C:\msys64\mingw64\bin\windres.exe' `
-        -ArgumentList '-i', 'icon.rc', '-o', 'rsrc.syso', '-O', 'coff' `
+        -ArgumentList '-i', 'assets\icon.rc', '-o', 'rsrc.syso', '-O', 'coff' `
         -Wait -PassThru -NoNewWindow `
         -RedirectStandardError "$PWD\windres_err.txt"
 
