@@ -6,13 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Full build with icon embedding (PowerShell):**
 ```powershell
-./do_build.ps1
+./scripts/do_build.ps1
 ```
-Generates a multi-size ICO from `bear.png` via `windres`, then compiles the Windows GUI executable.
+Generates a multi-size ICO from `assets/bear.png` via `windres`, then compiles the Windows GUI executable.
 
 **Simple build (Batch):**
 ```
-build.bat
+scripts/build.bat
 ```
 Requires Go 1.22+ and MSYS2 MinGW-w64 GCC on PATH.
 
@@ -45,7 +45,7 @@ All Go source files are in a single `main` package. The architecture has three c
 - `models.go` — Plain Go structs: `UserProfile`, `SetRecord`, `GameRecord`, `ActiveSetState`.
 
 ### Entry Point
-- `main.go` — Creates the Fyne app with the embedded `bear.png` icon, opens the DB, and calls `app.start()`.
+- `main.go` — Creates the Fyne app with the embedded `assets/bear.png` icon, opens the DB, and calls `app.start()`.
 
 ### Key Data Flows
 1. **App start:** `app.start()` → check DB for profile → Onboarding if missing, else load `ActiveSetState`.
@@ -64,4 +64,5 @@ All Go source files are in a single `main` package. The architecture has three c
 - Colors are stored as `#RRGGBB` hex strings in the DB.
 - `ActiveSetState` is hydrated from the DB on startup and updated incrementally in memory as games are recorded.
 - The DB file lives at `%APPDATA%\SetTracker\settracker.db` at runtime.
-- Windows resource compilation artifacts (`icon.rc`, `rsrc.syso`) are committed and used during the build to embed the icon.
+- `assets/icon.rc` and root-level `rsrc.syso` are committed build artifacts used to embed the Windows icon. `rsrc.syso` must stay in the root — Go's linker only picks up `.syso` files from the package directory.
+- Build scripts live in `scripts/`, assets (`bear.png`, `bear.ico`, `icon.rc`) in `assets/`. All Go source files remain flat in the root (single `main` package — Go requires all files in a package to share one directory).
